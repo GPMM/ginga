@@ -20,6 +20,7 @@
 *.sin
 *.so
 *.trs
+*.swp
 *~
 .#*
 .deps
