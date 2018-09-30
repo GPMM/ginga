@@ -76,6 +76,28 @@ Media::setProperty (const string &name, const string &value, Time dur)
 }
 
 void
+Media::preload ()
+{
+  string type = _properties["type"];
+
+  if (_player == nullptr)
+  {
+    Formatter *fmt;
+
+    g_assert (_doc->getData ("formatter", (void **) &fmt));
+
+    _player = Player::createPlayer (
+        fmt, this, _properties["uri"], _properties["type"], true);
+
+    if (unlikely (_player == nullptr))
+      return; // fail
+
+    for (auto it : _properties)
+      _player->setProperty (it.first, it.second);
+  }
+}
+
+void
 Media::sendKey (const string &key, bool press)
 {
   list<Event *> buf;
@@ -185,17 +207,23 @@ Media::beforeTransition (Event *evt, Event::Transition transition)
               {
                 if (evt->isLambda ())
                   { // Lambda
-                    Formatter *fmt;
+                    if (_player == nullptr)
+                    {
+                      Formatter *fmt;
 
-                    g_assert (_doc->getData ("formatter", (void **) &fmt));
-                    g_assert_null (_player);
-                    _player = Player::createPlayer (
-                        fmt, this, _properties["uri"], _properties["type"]);
-                    if (unlikely (_player == nullptr))
-                      return false; // fail
+                      g_assert (_doc->getData ("formatter", (void **) &fmt));
 
-                    for (auto it : _properties)
-                      _player->setProperty (it.first, it.second);
+                      //g_assert_null (_player);
+
+                      _player = Player::createPlayer (
+                          fmt, this, _properties["uri"], _properties["type"]);
+
+                      if (unlikely (_player == nullptr))
+                        return false; // fail
+
+                      for (auto it : _properties)
+                        _player->setProperty (it.first, it.second);
+                    }
 
                     g_assert_nonnull (_player);
                     // Start underlying player.

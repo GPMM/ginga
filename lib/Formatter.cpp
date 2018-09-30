@@ -152,6 +152,9 @@ Formatter::start (const string &file, string *errmsg)
   g_assert_nonnull (_doc);
   _doc->setData ("formatter", (void *) this);
 
+  for (auto media : *_doc->getMedias ())
+    media->preload ();
+
   Context *root = _doc->getRoot ();
   g_assert_nonnull (root);
   MediaSettings *settings = _doc->getSettings ();
@@ -292,7 +295,7 @@ Formatter::redraw (cairo_t *cr)
       string info;
       cairo_surface_t *debug;
       Rect ink;
-      info = xstrbuild ("%s: #%lu %" GINGA_TIME_FORMAT " %.1ffps",
+      info = xstrbuild ("%s: #%llu %" GINGA_TIME_FORMAT " %.1ffps",
                         _docPath.c_str (), _lastTickFrameNo,
                         GINGA_TIME_ARGS (_lastTickTotal),
                         1 * GINGA_SECOND / (double) _lastTickDiff);

@@ -23,6 +23,7 @@ along with Ginga.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include "PlayerImage.h"
 #include "PlayerText.h"
+#include "PlayerSE.h"
 #include "PlayerVideo.h"
 #include "PlayerSigGen.h"
 
@@ -82,6 +83,7 @@ static map<string, string> mime_table = {
   { "xlet", "application/x-ginga-NCLet" },
   { "xlt", "application/x-ginga-NCLet" },
   { "xml", "text/xml" },
+  { "mpegv", "text/mpegv" },
 };
 
 static bool
@@ -92,6 +94,19 @@ mime_table_index (const string &key, string *result)
     return false;
   tryset (result, it->second);
   return true;
+}
+
+static map<string, bool> preload_table = {
+  { "text/mpegv", true },
+};
+
+static bool
+allow_preload (const string &mime)
+{
+  map<string, bool>::iterator it;
+  if ((it = preload_table.find (mime)) == preload_table.end ())
+    return false;
+  return it->second;
 }
 
 // Property table.
@@ -519,7 +534,7 @@ Player::getPlayerProperty (const string &name, string *defval)
 
 Player *
 Player::createPlayer (Formatter *formatter, Media *media, const string &uri,
-                      const string &type)
+                      const string &type, bool preload)
 {
   Player *player;
   string mime;
@@ -544,6 +559,9 @@ Player::createPlayer (Formatter *formatter, Media *media, const string &uri,
             }
         }
     }
+
+  if (preload && !allow_preload(mime))
+    return nullptr;
 
   if (mime == "")
     mime = "application/x-ginga-timer";
@@ -586,6 +604,10 @@ Player::createPlayer (Formatter *formatter, Media *media, const string &uri,
       player = new PlayerLua (formatter, media);
     }
 #endif // WITH_NCLUA
+  else if (mime == "text/mpegv")
+    {
+      player = new PlayerSE (formatter, media);
+    }
   else
     {
       player = new Player (formatter, media);

@@ -87,7 +87,7 @@ public:
   bool isFocused ();
 
   Time getTime ();
-  void incTime (Time);
+  virtual void incTime (Time);
 
   Time getDuration ();
   void setDuration (Time);
@@ -122,7 +122,7 @@ public:
   static void setCurrentFocus (const string &);
   static Property getPlayerProperty (const string &, string *);
   static Player *createPlayer (Formatter *, Media *, const string &,
-                               const string &type = "");
+                               const string &type = "", const bool preload = false);
 
 protected:
   Formatter *_formatter;     // formatter handle

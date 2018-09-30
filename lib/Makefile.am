@@ -49,6 +49,7 @@ src+= PlayerAnimator.cpp
 src+= PlayerImage.cpp
 src+= PlayerSigGen.cpp
 src+= PlayerText.cpp
+src+= PlayerSE.cpp
 src+= PlayerVideo.cpp
 src+= Predicate.cpp
 src+= Switch.cpp

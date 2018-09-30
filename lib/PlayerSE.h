@@ -15,41 +15,43 @@ License for more details.
 You should have received a copy of the GNU General Public License
 along with Ginga.  If not, see <https://www.gnu.org/licenses/>.  */
 
-#ifndef MEDIA_H
-#define MEDIA_H
+#ifndef PLAYER_SE_H
+#define PLAYER_SE_H
 
-#include "Object.h"
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/uri.h>
+
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
+
 #include "Player.h"
 
 GINGA_NAMESPACE_BEGIN
 
-class Media : public Object
+class PlayerSE : public Player
 {
 public:
-  explicit Media (const string &);
-  virtual ~Media ();
+  PlayerSE (Formatter *, Media *);
+  ~PlayerSE ();
 
-  // Object:
-  string getObjectTypeAsString () override;
-  string toString () override;
-  void setProperty (const string &, const string &, Time dur = 0) override;
-  void preload ();
-  void sendKey (const string &, bool) override;
-  void sendTick (Time, Time, Time) override;
-  bool beforeTransition (Event *, Event::Transition) override;
-  bool afterTransition (Event *, Event::Transition) override;
+  void incTime (Time) override;
 
-  // Media:
-  virtual bool isFocused ();
-  virtual bool getZ (int *, int *);
-  virtual void redraw (cairo_t *);
+  void start () override;
+  void stop () override;
+  void pause () override;
+  void resume () override;
+
+  void reload () override;
 
 protected:
-  Player *_player; // underlying player
+  bool doSetProperty (Property, const string &, const string &) override;
 
-  void doStop () override;
+private:
+  bool parseMpegV ();
+
 };
 
 GINGA_NAMESPACE_END
 
-#endif // MEDIA_H
+#endif // PLAYER_MPEGV
