@@ -158,6 +158,8 @@ bool try_parse_time (const string &, Time *);
 Time parse_time (const string &);
 
 int parse_percent (const string &, int, int, int);
+double parse_coord (const string &, double, double);
+string parse_axis (const char, const string &);
 guint8 parse_pixel (const string &);
 
 // String functions.

@@ -24,8 +24,11 @@ along with Ginga.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 #include "Player.h"
+#include "MQTTClient.h"
 
 GINGA_NAMESPACE_BEGIN
 
@@ -48,7 +51,11 @@ protected:
   bool doSetProperty (Property, const string &, const string &) override;
 
 private:
+  xmlDocPtr _doc;
+  MQTTClient::MQTTClient mqtt;
+ 
   bool parseMpegV ();
+  void createSEDLDoc ();
 
 };
 

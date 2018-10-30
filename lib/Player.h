@@ -77,6 +77,11 @@ public:
     PROP_WIDTH,
     PROP_Z_INDEX,
     PROP_Z_ORDER,
+    PROP_X_AXIS,
+    PROP_Y_AXIS,
+    PROP_Z_AXIS,
+    PROP_POLAR,
+    PROP_AZIMUTHAL,
   };
 
   Player (Formatter *, Media *);
@@ -152,6 +157,11 @@ protected:
     string focusIndex; // focus index
     string type;       // content mime-type
     string uri;        // content URI
+    string x_axis;
+    string y_axis;
+    string z_axis;
+    double polar;
+    double azimuthal;
   } _prop;
 
 protected:

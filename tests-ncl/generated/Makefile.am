@@ -218,7 +218,7 @@ TEST_TRANSITION+= test-transition-html-fade.ncl
 CLEANFILES+= $(TEST_MIME)
 $(TEST_MIME): test-mime*.ncl.in
 	$(AM_V_GEN)\
-	type=`basename $@ | sed 's,test-mime-\([a-z0-9]*\)\.ncl,\1,g'`;\
+	type=`basename $@ | gsed 's,test-mime-\([a-z0-9]*\)\.ncl,\1,g'`;\
 	case $$type in\
 	  avi) src="samples/night.avi";;\
 	  jpg) src="samples/felis.jpg";;\
@@ -234,13 +234,13 @@ $(TEST_MIME): test-mime*.ncl.in
 	  html) src="samples/page.html";;\
 	    *) exit 1;;\
 	esac;\
-	sed -e "s,@SRC@,$$src,g" "test-mime.ncl.in" >$@
+	gsed -e "s,@SRC@,$$src,g" "test-mime.ncl.in" >$@
 
 CLEANFILES+= $(TEST_TRANSITION)
 $(TEST_TRANSITION): test-transition-*.ncl.in
 	$(AM_V_GEN)\
-	type=`basename $@ | sed 's,test-transition-\([a-z0-9]*\).*,\1,g'`;\
-	suffix=`basename $@ | sed 's,test-transition-[a-z0-9]*-\(.*\)\.ncl,\1,g'`;\
+	type=`basename $@ | gsed 's,test-transition-\([a-z0-9]*\).*,\1,g'`;\
+	suffix=`basename $@ | gsed 's,test-transition-[a-z0-9]*-\(.*\)\.ncl,\1,g'`;\
 	case $$type in\
 	  aud) src="samples/arcade.mp3";;\
 	  img) src="samples/gnu.png";;\
@@ -253,14 +253,14 @@ $(TEST_TRANSITION): test-transition-*.ncl.in
 	    *) exit 1;;\
 	esac;\
 	src_remote="http://raw.github.com/telemidia/ginga/master//tests-ncl/$$src";\
-	sed -e "s,@SRC@,$$src,gi;s,@SRC_REMOTE@,"$$src_remote",gi"\
+	gsed -e "s,@SRC@,$$src,gi;s,@SRC_REMOTE@,"$$src_remote",gi"\
          "test-transition-$$suffix.ncl.in" >$@
 
 CLEANFILES+= $(TEST_MEDIA)
 $(TEST_MEDIA): test-media-*.ncl.in
 	$(AM_V_GEN)\
-	type=`basename $@ | sed 's,test-media-\([a-z0-9]*\).*,\1,g'`;\
-	suffix=`basename $@ | sed 's,test-media-[a-z0-9]*-\(.*\)\.ncl,\1,g'`;\
+	type=`basename $@ | gsed 's,test-media-\([a-z0-9]*\).*,\1,g'`;\
+	suffix=`basename $@ | gsed 's,test-media-[a-z0-9]*-\(.*\)\.ncl,\1,g'`;\
 	case $$type in\
 	  aud) src="samples/arcade.mp3";;\
 	  img) src="samples/gnu.png";;\
@@ -273,5 +273,5 @@ $(TEST_MEDIA): test-media-*.ncl.in
 	    *) exit 1;;\
 	esac;\
 	src_remote="http://raw.github.com/telemidia/ginga/master//tests-ncl/$$src";\
-	sed -e "s,@SRC@,$$src,gi;s,@SRC_REMOTE@,"$$src_remote",gi"\
+	gsed -e "s,@SRC@,$$src,gi;s,@SRC_REMOTE@,"$$src_remote",gi"\
          "test-media-$$suffix.ncl.in" >$@

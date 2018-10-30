@@ -83,7 +83,7 @@ static map<string, string> mime_table = {
   { "xlet", "application/x-ginga-NCLet" },
   { "xlt", "application/x-ginga-NCLet" },
   { "xml", "text/xml" },
-  { "mpegv", "text/mpegv" },
+  { "mpegv", "application/x-sensory-effect" },
 };
 
 static bool
@@ -156,6 +156,11 @@ static map<string, PlayerPropertyInfo> player_property_map = {
   { "zOrder", { Player::PROP_Z_ORDER, true, "0" } },
   { "uri", { Player::PROP_URI, true, "" } },
   { "type", { Player::PROP_TYPE, true, "application/x-ginga-timer" } },
+  { "x-axis", { Player::PROP_X_AXIS, true, "" } },
+  { "y-axis", { Player::PROP_Y_AXIS, true, "" } },
+  { "z-axis", { Player::PROP_Z_AXIS, true, "" } },
+  { "polar", { Player::PROP_POLAR, true, "" } },
+  { "azimuthal", { Player::PROP_AZIMUTHAL, true, "" } },
 };
 
 static map<string, string> player_property_aliases = {
@@ -527,6 +532,7 @@ Player::getPlayerProperty (const string &name, string *defval)
       it = player_property_map.find (_name);
       g_assert (it != player_property_map.end ());
     }
+
   info = &it->second;
   tryset (defval, info->defval);
   return info->code;
@@ -604,7 +610,7 @@ Player::createPlayer (Formatter *formatter, Media *media, const string &uri,
       player = new PlayerLua (formatter, media);
     }
 #endif // WITH_NCLUA
-  else if (mime == "text/mpegv")
+  else if (mime.find("application/x-sensory-effect") == 0)
     {
       player = new PlayerSE (formatter, media);
     }
@@ -780,6 +786,32 @@ Player::doSetProperty (Property code, unused (const string &name),
         _prop.type = value;
         break;
       }
+    case PROP_X_AXIS:
+      {
+        _prop.x_axis = value;
+        break;
+      }
+    case PROP_Y_AXIS:
+      {
+        _prop.y_axis = value;
+        break;
+      }
+    case PROP_Z_AXIS:
+      {
+        _prop.z_axis = value;
+        break;
+      }
+    case PROP_POLAR:
+      {
+        _prop.polar = value.empty() ? -1.0 : ginga::parse_coord(value, 0.0, M_PI);
+        break;
+      }
+    case PROP_AZIMUTHAL:
+      {
+        _prop.azimuthal = value.empty() ? -1.0 : ginga::parse_coord(value, 0.0, 2 * M_PI);
+        break;
+      }
+
     default:
       {
         break;

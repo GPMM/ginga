@@ -67,6 +67,9 @@ AC_SUBST([LIBXML_REQUIRED_VERSION],      libxml_required_version)
 AC_SUBST([PANGO_REQUIRED_VERSION],       pango_required_version)
 AC_SUBST([SOUP_REQUIRED_VERSION],        soup_required_version)
 
+m4_define([libuv_required_version],      [1.23.0])
+AC_SUBST([LIBUV_REQUIRED_VERSION],       libuv_required_version)
+
 # Optional dependencies version.
 m4_define([cef_required_version],        [3.0])
 m4_define([librsvg_required_version],    [2.40.0])
@@ -203,6 +206,11 @@ AU_CHECK_PKG([PANGO],
  [pango >= pango_required_version
   pangocairo >= pango_required_version])
 
+# sensory effects
+
+AU_CHECK_PKG([LIBUV],
+ [libuv >= libuv_required_version])
+
 # Optional dependencies.
 
 # AU_CHECK_OPTIONAL_PKG([SOUP], [libsoup-2.4 >= soup_required_version],
@@ -301,6 +309,9 @@ AS_VAR_APPEND([GINGA_ALL_CXXFLAGS], [" $NCLUA_CFLAGS"])
 AS_VAR_APPEND([GINGA_ALL_CXXFLAGS], [" $OPENGL_CFLAGS"])
 AS_VAR_APPEND([GINGA_ALL_CXXFLAGS], [" $PANGO_CFLAGS"])
 AS_VAR_APPEND([GINGA_ALL_CXXFLAGS], [" $SOUP_CFLAGS"])
+
+AS_VAR_APPEND([GINGA_ALL_CXXFLAGS], [" $LIBUV_CFLAGS"])
+
 AC_SUBST([GINGA_ALL_CXXFLAGS])
 
 AS_VAR_APPEND([GINGA_ALL_LDFLAGS],  [" $CAIRO_LIBS"])
@@ -315,6 +326,9 @@ AS_VAR_APPEND([GINGA_ALL_LDFLAGS],  [" $NCLUA_LIBS"])
 AS_VAR_APPEND([GINGA_ALL_LDFLAGS],  [" $OPENGL_LIBS"])
 AS_VAR_APPEND([GINGA_ALL_LDFLAGS],  [" $PANGO_LIBS"])
 AS_VAR_APPEND([GINGA_ALL_LDFLAGS],  [" $SOUP_LIBS"])
+
+AS_VAR_APPEND([GINGA_ALL_LDFLAGS],  [" $LIBUV_LIBS"])
+
 AC_SUBST([GINGA_ALL_LDFLAGS])
 
 # Directories.

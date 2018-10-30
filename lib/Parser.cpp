@@ -467,6 +467,11 @@ static map<string, ParserSyntaxElt> parser_syntax_table = {
           { "bottom", 0 },
           { "height", 0 },
           { "width", 0 },
+          { "azimuthal", 0 },
+          { "polar", 0 },
+          { "x-axis", 0 },
+          { "y-axis", 0 },
+          { "z-axis", 0 },
           { "zIndex", 0 } } }, // unused
   },
   {
@@ -2821,7 +2826,8 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
   Rect screen;
   Rect parent;
   Rect rect;
-  string str;
+  double azimuthal = -1, polar = -1;
+  string str, x_axis = "", y_axis = "", z_axis = "";
 
   parent_node = elt->getParentNode ();
   g_assert_nonnull (parent_node);
@@ -2854,6 +2860,26 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
       rect.y += parent.height - rect.height
                 - ginga::parse_percent (str, parent.height, 0, G_MAXINT);
     }
+  if (elt->getAttribute ("polar", &str))
+    {
+      polar = parse_coord(str, 0.0, M_PI);
+    }
+  if (elt->getAttribute ("azimuthal", &str))
+    {
+      azimuthal = parse_coord(str, 0.0, 2 * M_PI);
+    }
+  if (elt->getAttribute ("x-axis", &str))
+    {
+      x_axis = parse_axis('x', str);
+    }
+  if (elt->getAttribute ("y-axis", &str))
+    {
+      y_axis = parse_axis('y', str);
+    }
+  if (elt->getAttribute ("z-axis", &str))
+    {
+      z_axis = parse_axis('z', str);
+    }
 
   // Update region position to absolute values.
   st->rectStackPush (rect);
@@ -2867,6 +2893,19 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
   elt->setAttribute ("top", xstrbuild ("%g%%", top));
   elt->setAttribute ("width", xstrbuild ("%g%%", width));
   elt->setAttribute ("height", xstrbuild ("%g%%", height));
+
+  if (polar != -1 && azimuthal != -1)
+    {
+      elt->setAttribute ("polar", xstrbuild ("%lf", polar));
+      elt->setAttribute ("azimuthal", xstrbuild ("%lf", azimuthal));
+    }
+
+  if (!x_axis.empty() && !y_axis.empty() && !z_axis.empty())
+    {
+      elt->setAttribute ("x-axis", x_axis);
+      elt->setAttribute ("y-axis", y_axis);
+      elt->setAttribute ("z-axis", z_axis);
+    }
 
   return true;
 }

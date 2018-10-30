@@ -17,6 +17,7 @@ along with Ginga.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include "aux-ginga.h"
 #include <sstream> // for stringstream
+#include <math.h>
 
 GINGA_NAMESPACE_BEGIN
 
@@ -285,6 +286,74 @@ parse_percent (const string &s, int base, int min, int max)
       result = (int) lround (d);
     }
   return (int) CLAMP (result, min, max);
+}
+
+/**
+ * @brief Parses coordinate string to radians.
+ * @param s Coordinate string.
+ * @param min Minimum resulting double.
+ * @param max Maximum resulting double.
+ * @return The resulting double.
+ */
+double
+parse_coord (const string &s, double min, double max)
+{
+  double d;
+  double result;
+  size_t pos;
+  string value = s;
+  bool degree = false;
+
+  if (stoi(s) == -1.0)
+    return -1.0;
+
+  if ((pos = s.find("deg")) != string::npos)
+    {
+      degree = true;
+      value = s.substr(0, pos);
+    }
+
+  d = xstrtod (s);
+  result = degree ? d * M_PI / 180.0 : d;
+
+  return (double) CLAMP (result, min, max);
+}
+
+/**
+ * @brief Parses coordinate string to radians.
+ * @param s Coordinate string.
+ * @param min Minimum resulting double.
+ * @param max Maximum resulting double.
+ * @return The resulting double.
+ */
+string
+parse_axis(const char axis, const string &s)
+{
+  switch (axis)
+  {
+    case 'x':
+      if (s == "left" ||
+          s == "centerleft" ||
+          s == "center" ||
+          s == "centerright" ||
+          s == "right")
+        return s;
+      break;
+    case 'y':
+      if (s == "top" ||
+          s == "middle" ||
+          s == "bottom")
+        return s;
+      break;
+    case 'z':
+      if (s == "back" ||
+          s == "midway" ||
+          s == "front")
+        return s;
+      break;
+  }
+  
+  return "";
 }
 
 /**

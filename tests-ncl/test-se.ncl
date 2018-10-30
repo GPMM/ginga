@@ -16,7 +16,8 @@
       <region id="reg2" left="50%" width="50%" height="50%"/>
       <region id="reg3" top="50%" width="50%" height="50%"/>
       <region id="reg4" top="50%" left="50%" width="50%" height="50%"/>
-      <region id="reg5"/>
+      <region id="reg5" x-axis="left" y-axis="top" z-axis="*"/>
+      <!-- <region id="reg5" azimuthal="20deg" polar="30deg"/> -->
     </regionBase>
     <descriptorBase>
       <descriptor id="desc1" region="reg1"/>
@@ -32,7 +33,7 @@
     <port id="start3" component="text3"/>
     <port id="start4" component="text4"/>
     <media id="text" src="samples/text.txt" descriptor="desc1">
-      <area id="segMpegV" begin="5s"/>
+      <area id="segMpegV" begin="1s"/>
       <property name="fontColor" value="#000000" />
       <property name="backgroundColor" value="rgb(255,255,0)" />
       <property name="fontFamily" value="Courier" />
@@ -76,9 +77,7 @@
       <property name="fontWeight" value="normal" />
       <property name="fontVariant" value="small-caps" />
     </media>
-    <media id="mpegv1" type="text/mpegv" descriptor="desc5">
-      <property name="SEtype" value="windType" />
-      <property name="location" value="left:*:*" />
+    <media id="mpegv1" type="application/x-sensory-effect-windType" descriptor="desc5">
       <property name="intensity" value="3.0" />
     </media>
     <link id="lText" xconnector="onBeginStart_delay">
