@@ -467,6 +467,11 @@ static map<string, ParserSyntaxElt> parser_syntax_table = {
           { "bottom", 0 },
           { "height", 0 },
           { "width", 0 },
+          { "azimuthal", 0 },
+          { "polar", 0 },
+          { "x-axis", 0 },
+          { "y-axis", 0 },
+          { "z-axis", 0 },
           { "zIndex", 0 } } }, // unused
   },
   {
@@ -2845,13 +2850,22 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
   Rect screen;
   Rect parent;
   Rect rect;
-  string str;
+  double polar, azimuthal;
+  string str, xAxis, yAxis, zAxis;
+
+  polar = -1.0;
+  azimuthal = -1.0;
+
+  xAxis = "*";
+  yAxis = "*";
+  zAxis = "*";
 
   parent_node = elt->getParentNode ();
   g_assert_nonnull (parent_node);
 
   screen = st->_rectStack.front ();
   rect = parent = st->rectStackPeek ();
+
   if (elt->getAttribute ("left", &str))
     {
       rect.x += ginga::parse_percent (str, parent.width, 0, G_MAXINT);
@@ -2878,6 +2892,26 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
       rect.y += parent.height - rect.height
                 - ginga::parse_percent (str, parent.height, 0, G_MAXINT);
     }
+  if (elt->getAttribute ("polar", &str))
+    {
+      polar = parse_degrees (str, 0.0, 180.0);
+    }
+  if (elt->getAttribute ("azimuthal", &str))
+    {
+      azimuthal = parse_degrees (str, 0.0, 360.0);
+    }
+  if (elt->getAttribute ("x-axis", &str))
+    {
+      xAxis = parse_axis('x', str);
+    }
+  if (elt->getAttribute ("y-axis", &str))
+    {
+      yAxis = parse_axis('y', str);
+    }
+  if (elt->getAttribute ("z-axis", &str))
+    {
+      zAxis = parse_axis('z', str);
+    }
 
   // Update region position to absolute values.
   st->rectStackPush (rect);
@@ -2885,6 +2919,20 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
   double top = ((double) rect.y / screen.height) * 100.;
   double width = ((double) rect.width / screen.width) * 100.;
   double height = ((double) rect.height / screen.height) * 100.;
+
+
+  if (polar != -1.0 && azimuthal != -1.0)
+    {
+      elt->setAttribute ("polar", xstrbuild ("%lf", polar));
+      elt->setAttribute ("azimuthal", xstrbuild ("%lf", azimuthal));
+    }
+
+  if (!xAxis.empty() && !yAxis.empty() && !zAxis.empty())
+    {
+      elt->setAttribute ("x-axis", xAxis);
+      elt->setAttribute ("y-axis", yAxis);
+      elt->setAttribute ("z-axis", zAxis);
+    }
 
   elt->setAttribute ("zOrder", xstrbuild ("%d", last_zorder++));
   elt->setAttribute ("left", xstrbuild ("%g%%", left));

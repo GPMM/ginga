@@ -25,6 +25,7 @@ along with Ginga.  If not, see <https://www.gnu.org/licenses/>.  */
 #include "PlayerText.h"
 #include "PlayerVideo.h"
 #include "PlayerSigGen.h"
+#include "PlayerSE.h"
 
 #if defined WITH_NCLUA && WITH_NCLUA
 #include "PlayerLua.h"
@@ -144,6 +145,11 @@ static map<string, PlayerPropertyInfo> player_property_map = {
   { "type", { Player::PROP_TYPE, true, "application/x-ginga-timer" } },
   {"offsetBuffer", {Player::PROP_BUFFER_OFFSET, true, "0"} },
   {"endOffsetBuffer", {Player::PROP_BUFFER_OFFSET_END, true, "indefinite"} },
+  { "x-axis", { Player::PROP_X_AXIS, true, "" } },
+  { "y-axis", { Player::PROP_Y_AXIS, true, "" } },
+  { "z-axis", { Player::PROP_Z_AXIS, true, "" } },
+  { "polar", { Player::PROP_POLAR, true, "" } },
+  { "azimuthal", { Player::PROP_AZIMUTHAL, true, "" } },
 };
 
 static map<string, string> player_property_aliases = {
@@ -591,6 +597,10 @@ Player::createPlayer (Formatter *formatter, Media *media, const string &uri,
     {
       player = new PlayerText (formatter, media);
     }
+  else if (xstrhasprefix (mime, "application/x-sensoryEffect"))
+    {
+      player = new PlayerSE (formatter, media);
+    }
 #if defined WITH_CEF && WITH_CEF
   else if (xstrhasprefix (mime, "text/html"))
     {
@@ -786,6 +796,26 @@ Player::doSetProperty (Property code, unused (const string &name),
         break;
       }
     case PROP_BUFFER_OFFSET_END:
+      {
+        break;
+      }
+    case PROP_X_AXIS:
+      {
+        break;
+      }
+    case PROP_Y_AXIS:
+      {
+        break;
+      }
+    case PROP_Z_AXIS:
+      {
+        break;
+      }
+    case PROP_POLAR:
+      {
+        break;
+      }
+    case PROP_AZIMUTHAL:
       {
         break;
       }

@@ -298,6 +298,70 @@ parse_pixel (const string &s)
   return (guint8) parse_percent (s, 255, 0, 255);
 }
 
+/**
+ * @brief Parses degrees string to degrees.
+ * @param s Degrees string.
+ * @param min Minimum resulting double.
+ * @param max Maximum resulting double.
+ * @return The resulting double.
+ */
+double
+parse_degrees (const string &s, double min, double max)
+{
+  double result;
+  size_t pos;
+  string value;
+
+  if (xstrtoint (s, 10) == -1)
+    return -1;
+
+  if ((pos = s.find("deg")) != string::npos)
+    value = s.substr(0, pos);
+  else
+    value = s;
+
+  result = xstrtod (value);
+
+  return (double) CLAMP (result, min, max);
+}
+
+/**
+ * @brief Parses coordinate string to radians.
+ * @param s Coordinate string.
+ * @param min Minimum resulting double.
+ * @param max Maximum resulting double.
+ * @return The resulting double.
+ */
+string
+parse_axis(const char axis, const string &s)
+{
+  switch (axis)
+  {
+    case 'x':
+      if (s == "left" ||
+          s == "centerleft" ||
+          s == "center" ||
+          s == "centerright" ||
+          s == "right")
+        return s;
+      break;
+    case 'y':
+      if (s == "top" ||
+          s == "middle" ||
+          s == "bottom")
+        return s;
+      break;
+    case 'z':
+      if (s == "back" ||
+          s == "midway" ||
+          s == "front")
+        return s;
+      break;
+  }
+
+  return "*";
+}
+
 // Strings -----------------------------------------------------------------
 
 /**

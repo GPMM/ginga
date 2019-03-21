@@ -80,6 +80,11 @@ public:
     PROP_Z_ORDER,
     PROP_BUFFER_OFFSET,
     PROP_BUFFER_OFFSET_END,
+    PROP_X_AXIS,
+    PROP_Y_AXIS,
+    PROP_Z_AXIS,
+    PROP_POLAR,
+    PROP_AZIMUTHAL,
   };
 
   Player (Formatter *, Media *);
@@ -90,7 +95,7 @@ public:
   bool isFocused ();
 
   Time getTime ();
-  void incTime (Time);
+  virtual void incTime (Time);
 
   Time getDuration ();
   void setDuration (Time);
@@ -160,6 +165,11 @@ protected:
     string focusIndex; // focus index
     string type;       // content mime-type
     string uri;        // content URI
+    string xAxis;
+    string yAxis;
+    string zAxis;
+    double polar;
+    double azimuthal;
   } _prop;
 
 protected:
