@@ -45,6 +45,7 @@ PlayerSE::start ()
   if (!Player::getPrepared ())
     _client->connect ();
 
+  cout << "x " << _prop.axis.x << " y " << _prop.axis.y << " z " << _prop.axis.z << endl;
   _client->publish("teste", "start");
 
   Player::start ();

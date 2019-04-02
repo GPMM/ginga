@@ -80,11 +80,20 @@ public:
     PROP_Z_ORDER,
     PROP_BUFFER_OFFSET,
     PROP_BUFFER_OFFSET_END,
+    PROP_POSITIONING,
     PROP_X_AXIS,
     PROP_Y_AXIS,
     PROP_Z_AXIS,
     PROP_POLAR,
     PROP_AZIMUTHAL,
+    PROP_WIDTH_DEGREES,
+    PROP_HEIGHT_DEGREES,
+  };
+
+  enum Positioning {
+    SCREEN,
+    SPHERE,
+    AXIS,
   };
 
   Player (Formatter *, Media *);
@@ -154,22 +163,20 @@ protected:
   map<string, string> _properties; // property table
   struct
   {
-    Color bgColor;     // background color
-    Rect rect;         // x, y, w, h in pixels
-    Time duration;     // explicit duration
-    bool debug;        // true if debugging mode is on
-    bool visible;      // true if visible
-    guint8 alpha;      // alpha
-    int zindex;        // z-index
-    int zorder;        // z-order
-    string focusIndex; // focus index
-    string type;       // content mime-type
-    string uri;        // content URI
-    string xAxis;
-    string yAxis;
-    string zAxis;
-    double polar;
-    double azimuthal;
+    Color bgColor;           // background color
+    Positioning positioning; // screen, sphere or axis 
+    Rect rect;               // x, y, w, h in pixels
+    Sphere sphere;           // polar, azimuthal, width, height
+    Axis axis;               // x-axis, y-axis, z-axis
+    Time duration;           // explicit duration
+    bool debug;              // true if debugging mode is on
+    bool visible;            // true if visible
+    guint8 alpha;            // alpha
+    int zindex;              // z-index
+    int zorder;              // z-order
+    string focusIndex;       // focus index
+    string type;             // content mime-type
+    string uri;              // content URI
   } _prop;
 
 protected:

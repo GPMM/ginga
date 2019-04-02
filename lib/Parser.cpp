@@ -127,8 +127,10 @@ public:
   xmlNode *getParentNode ();
 
   const map<string, string> *getAttributes ();
+  bool hasAttribute (const string &);
   bool getAttribute (const string &, string *);
   bool setAttribute (const string &, const string &);
+  bool unsetAttribute (const string &);
 
   bool getData (const string &, void **);
   bool setData (const string &, void *, UserDataCleanFunc fn = nullptr);
@@ -469,9 +471,9 @@ static map<string, ParserSyntaxElt> parser_syntax_table = {
           { "width", 0 },
           { "azimuthal", 0 },
           { "polar", 0 },
-          { "x-axis", 0 },
-          { "y-axis", 0 },
-          { "z-axis", 0 },
+          { "xAxis", 0 },
+          { "yAxis", 0 },
+          { "zAxis", 0 },
           { "zIndex", 0 } } }, // unused
   },
   {
@@ -1016,6 +1018,20 @@ ParserElt::getAttributes ()
 }
 
 /**
+ * @brief Check if element has attribute
+ * @param name Attribute name.
+ * @return \c true if has attribute, or false otherwise.
+ */
+bool
+ParserElt::hasAttribute (const string &name)
+{
+  auto it = _attrs.find (name);
+  if (it == _attrs.end ())
+    return false;
+  return true;
+}
+
+/**
  * @brief Gets element attribute value
  * @param name Attribute name.
  * @param[out] value Variable to store the attribute value (if any).
@@ -1044,6 +1060,21 @@ ParserElt::setAttribute (const string &name, const string &value)
   bool result = !this->getAttribute (name, nullptr);
   _attrs[name] = value;
   return result;
+}
+
+/**
+ * @brief Unsets element attribute.
+ * @param name Attribute name.
+ * @return \c true if the attribute was previously set, or \c false
+ * otherwise.
+ */
+bool
+ParserElt::unsetAttribute (const string &name)
+{
+  if (!this->hasAttribute(name))
+    return false;
+  _attrs.erase(name);
+  return true;
 }
 
 /**
@@ -2850,15 +2881,9 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
   Rect screen;
   Rect parent;
   Rect rect;
-  double polar, azimuthal;
-  string str, xAxis, yAxis, zAxis;
-
-  polar = -1.0;
-  azimuthal = -1.0;
-
-  xAxis = "*";
-  yAxis = "*";
-  zAxis = "*";
+  Sphere sphere;
+  Axis axis;
+  string str;
 
   parent_node = elt->getParentNode ();
   g_assert_nonnull (parent_node);
@@ -2866,79 +2891,128 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
   screen = st->_rectStack.front ();
   rect = parent = st->rectStackPeek ();
 
-  if (elt->getAttribute ("left", &str))
+  if (elt->hasAttribute ("azimuthal") ||
+      elt->hasAttribute ("polar"))
     {
-      rect.x += ginga::parse_percent (str, parent.width, 0, G_MAXINT);
+      if (elt->getAttribute ("polar", &str))
+        {
+          sphere.polar = parse_degrees (str, 0.0, 180.0);
+        }
+      else
+        {
+          return st->errEltMissingAttribute(elt->getNode(), "polar");
+        }
+      if (elt->getAttribute ("azimuthal", &str))
+        {
+          sphere.azimuthal = parse_degrees (str, 0.0, 360.0);
+        }
+      else
+        {
+          return st->errEltMissingAttribute(elt->getNode(), "azimuthal");
+        }
+      if (elt->getAttribute ("width", &str))
+        {
+          sphere.width = ginga::parse_degrees (str, 0.0, 360.0);
+          elt->unsetAttribute("width");
+        }
+      else
+        {
+          sphere.width = 0.0;
+        }
+      if (elt->getAttribute ("height", &str))
+        {
+          sphere.height = ginga::parse_degrees (str, 0.0, 360.0);
+          elt->unsetAttribute("height");
+        }
+      else
+        {
+          sphere.height = 0.0;
+        }
+
+      elt->setAttribute ("positioning", "sphere");
+      elt->setAttribute ("polar", xstrbuild ("%.2lf", sphere.polar));
+      elt->setAttribute ("azimuthal", xstrbuild ("%.2lf", sphere.azimuthal));
+      elt->setAttribute ("widthDegrees", xstrbuild ("%.2lf", sphere.width));
+      elt->setAttribute ("heightDegrees", xstrbuild ("%.2lf", sphere.height));
     }
-  if (elt->getAttribute ("top", &str))
+  else if (elt->hasAttribute ("xAxis") ||
+           elt->hasAttribute ("yAxis") || 
+           elt->hasAttribute ("zAxis"))
     {
-      rect.y += ginga::parse_percent (str, parent.height, 0, G_MAXINT);
+      if (elt->getAttribute ("xAxis", &str))
+        {
+          axis.x = parse_axis('x', str);
+        }
+      else
+        {
+          return st->errEltMissingAttribute(elt->getNode(), "xAxis");
+        }
+      if (elt->getAttribute ("yAxis", &str))
+        {
+          axis.y = parse_axis('y', str);
+        }
+      else
+        {
+          return st->errEltMissingAttribute(elt->getNode(), "yAxis");
+        }
+      if (elt->getAttribute ("zAxis", &str))
+        {
+          axis.z = parse_axis('z', str);
+        }
+      else
+        {
+          return st->errEltMissingAttribute(elt->getNode(), "zAxis");
+        }
+
+      elt->setAttribute ("positioning", "axis");
+      elt->setAttribute ("xAxis", xstrbuild ("%s", axis.x.c_str ()));
+      elt->setAttribute ("yAxis", xstrbuild ("%s", axis.y.c_str ()));
+      elt->setAttribute ("zAxis", xstrbuild ("%s", axis.z.c_str ()));
     }
-  if (elt->getAttribute ("width", &str))
+  else
     {
-      rect.width = ginga::parse_percent (str, parent.width, 0, G_MAXINT);
-    }
-  if (elt->getAttribute ("height", &str))
-    {
-      rect.height = ginga::parse_percent (str, parent.height, 0, G_MAXINT);
-    }
-  if (elt->getAttribute ("right", &str))
-    {
-      rect.x += parent.width - rect.width
-                - ginga::parse_percent (str, parent.width, 0, G_MAXINT);
-    }
-  if (elt->getAttribute ("bottom", &str))
-    {
-      rect.y += parent.height - rect.height
-                - ginga::parse_percent (str, parent.height, 0, G_MAXINT);
-    }
-  if (elt->getAttribute ("polar", &str))
-    {
-      polar = parse_degrees (str, 0.0, 180.0);
-    }
-  if (elt->getAttribute ("azimuthal", &str))
-    {
-      azimuthal = parse_degrees (str, 0.0, 360.0);
-    }
-  if (elt->getAttribute ("x-axis", &str))
-    {
-      xAxis = parse_axis('x', str);
-    }
-  if (elt->getAttribute ("y-axis", &str))
-    {
-      yAxis = parse_axis('y', str);
-    }
-  if (elt->getAttribute ("z-axis", &str))
-    {
-      zAxis = parse_axis('z', str);
+      if (elt->getAttribute ("left", &str))
+        {
+          rect.x += ginga::parse_percent (str, parent.width, 0, G_MAXINT);
+        }
+      if (elt->getAttribute ("top", &str))
+        {
+          rect.y += ginga::parse_percent (str, parent.height, 0, G_MAXINT);
+        }
+      if (elt->getAttribute ("width", &str))
+        {
+          rect.width = ginga::parse_percent (str, parent.width, 0, G_MAXINT);
+        }
+      if (elt->getAttribute ("height", &str))
+        {
+          rect.height = ginga::parse_percent (str, parent.height, 0, G_MAXINT);
+        }
+      if (elt->getAttribute ("right", &str))
+        {
+          rect.x += parent.width - rect.width
+            - ginga::parse_percent (str, parent.width, 0, G_MAXINT);
+        }
+      if (elt->getAttribute ("bottom", &str))
+        {
+          rect.y += parent.height - rect.height
+            - ginga::parse_percent (str, parent.height, 0, G_MAXINT);
+        }
+
+      // Update region position to absolute values.
+      double left = ((double) rect.x / screen.width) * 100.;
+      double top = ((double) rect.y / screen.height) * 100.;
+      double width = ((double) rect.width / screen.width) * 100.;
+      double height = ((double) rect.height / screen.height) * 100.;
+
+      elt->setAttribute ("positioning", "screen");
+      elt->setAttribute ("zOrder", xstrbuild ("%d", last_zorder++));
+      elt->setAttribute ("left", xstrbuild ("%g%%", left));
+      elt->setAttribute ("top", xstrbuild ("%g%%", top));
+      elt->setAttribute ("width", xstrbuild ("%g%%", width));
+      elt->setAttribute ("height", xstrbuild ("%g%%", height));
     }
 
-  // Update region position to absolute values.
   st->rectStackPush (rect);
-  double left = ((double) rect.x / screen.width) * 100.;
-  double top = ((double) rect.y / screen.height) * 100.;
-  double width = ((double) rect.width / screen.width) * 100.;
-  double height = ((double) rect.height / screen.height) * 100.;
-
-
-  if (polar != -1.0 && azimuthal != -1.0)
-    {
-      elt->setAttribute ("polar", xstrbuild ("%lf", polar));
-      elt->setAttribute ("azimuthal", xstrbuild ("%lf", azimuthal));
-    }
-
-  if (!xAxis.empty() && !yAxis.empty() && !zAxis.empty())
-    {
-      elt->setAttribute ("x-axis", xAxis);
-      elt->setAttribute ("y-axis", yAxis);
-      elt->setAttribute ("z-axis", zAxis);
-    }
-
-  elt->setAttribute ("zOrder", xstrbuild ("%d", last_zorder++));
-  elt->setAttribute ("left", xstrbuild ("%g%%", left));
-  elt->setAttribute ("top", xstrbuild ("%g%%", top));
-  elt->setAttribute ("width", xstrbuild ("%g%%", width));
-  elt->setAttribute ("height", xstrbuild ("%g%%", height));
 
   return true;
 }

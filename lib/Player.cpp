@@ -143,13 +143,16 @@ static map<string, PlayerPropertyInfo> player_property_map = {
   { "zOrder", { Player::PROP_Z_ORDER, true, "0" } },
   { "uri", { Player::PROP_URI, true, "" } },
   { "type", { Player::PROP_TYPE, true, "application/x-ginga-timer" } },
-  {"offsetBuffer", {Player::PROP_BUFFER_OFFSET, true, "0"} },
-  {"endOffsetBuffer", {Player::PROP_BUFFER_OFFSET_END, true, "indefinite"} },
-  { "x-axis", { Player::PROP_X_AXIS, true, "" } },
-  { "y-axis", { Player::PROP_Y_AXIS, true, "" } },
-  { "z-axis", { Player::PROP_Z_AXIS, true, "" } },
-  { "polar", { Player::PROP_POLAR, true, "" } },
-  { "azimuthal", { Player::PROP_AZIMUTHAL, true, "" } },
+  { "offsetBuffer", {Player::PROP_BUFFER_OFFSET, true, "0"} },
+  { "endOffsetBuffer", {Player::PROP_BUFFER_OFFSET_END, true, "indefinite"} },
+  { "positioning", { Player::PROP_POSITIONING, true, "indefinite" } },
+  { "xAxis", { Player::PROP_X_AXIS, true, "*" } },
+  { "yAxis", { Player::PROP_Y_AXIS, true, "*" } },
+  { "zAxis", { Player::PROP_Z_AXIS, true, "*" } },
+  { "polar", { Player::PROP_POLAR, true, "0.0" } },
+  { "azimuthal", { Player::PROP_AZIMUTHAL, true, "0.0" } },
+  { "widthDegrees", { Player::PROP_WIDTH_DEGREES, true, "0.0" } },
+  { "heightDegrees", { Player::PROP_HEIGHT_DEGREES, true, "0.0" } },
 };
 
 static map<string, string> player_property_aliases = {
@@ -799,24 +802,49 @@ Player::doSetProperty (Property code, unused (const string &name),
       {
         break;
       }
+    case PROP_POSITIONING:
+      {
+        if (value == "screen")
+          _prop.positioning = SCREEN;
+        else if (value == "sphere")
+          _prop.positioning = SPHERE;
+        else if (value == "axis")
+          _prop.positioning = AXIS;
+        break;
+      }
     case PROP_X_AXIS:
       {
+        _prop.axis.x = value;
         break;
       }
     case PROP_Y_AXIS:
       {
+        _prop.axis.y = value;
         break;
       }
     case PROP_Z_AXIS:
       {
+        _prop.axis.z = value;
         break;
       }
     case PROP_POLAR:
       {
+        _prop.sphere.polar = xstrtod (value);
         break;
       }
     case PROP_AZIMUTHAL:
       {
+        _prop.sphere.azimuthal = xstrtod (value);
+        break;
+      }
+    case PROP_WIDTH_DEGREES:
+      {
+        _prop.sphere.width = xstrtod (value);
+        break;
+      }
+    case PROP_HEIGHT_DEGREES:
+      {
+        _prop.sphere.height = xstrtod (value);
         break;
       }
     default:

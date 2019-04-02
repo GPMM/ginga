@@ -118,6 +118,21 @@ typedef GdkRGBA Color;
 typedef GdkRectangle Rect;
 typedef GstClockTime Time;
 
+typedef struct 
+{
+  double polar;
+  double azimuthal;
+  double width;
+  double height;
+} Sphere;
+
+typedef struct
+{
+  string x;
+  string y;
+  string z;
+} Axis;
+
 // Time macros and functions.
 #define GINGA_TIME_NONE            GST_CLOCK_TIME_NONE
 #define GINGA_TIME_IS_VALID(t)     GST_CLOCK_TIME_IS_VALID ((t))
