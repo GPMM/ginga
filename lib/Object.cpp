@@ -353,7 +353,7 @@ Object::getProperty (const string &name)
 }
 
 void
-Object::setProperty (const string &name, const string &value, Time dur)
+Object::setProperty (const string &name, const string &value, Time dur, double by)
 {
   g_assert (GINGA_TIME_IS_VALID (dur));
   _properties[name] = value;

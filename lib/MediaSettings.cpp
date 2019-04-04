@@ -46,11 +46,11 @@ MediaSettings::getObjectTypeAsString ()
 
 void
 MediaSettings::setProperty (const string &name, const string &value,
-                            Time dur)
+                            Time dur, double by)
 {
   if (name == "service.currentFocus")
     Player::setCurrentFocus (value);
-  Media::setProperty (name, value, dur);
+  Media::setProperty (name, value, dur, by);
 }
 
 void

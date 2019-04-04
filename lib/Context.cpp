@@ -133,9 +133,9 @@ Context::getProperty (unused (const string &name))
 }
 
 void
-Context::setProperty (const string &name, const string &value, Time dur)
+Context::setProperty (const string &name, const string &value, Time dur, double by)
 {
-  Object::setProperty (name, value, dur);
+  Object::setProperty (name, value, dur, by);
 }
 
 void

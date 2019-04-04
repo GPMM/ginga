@@ -136,6 +136,7 @@ typedef struct
   string value;                 ///< Value to set (if attribution).
   string duration;              ///< Duration.
   string delay;                 ///< Delay.
+  string by;                    ///< By.
 } Action;
 
 GINGA_NAMESPACE_END

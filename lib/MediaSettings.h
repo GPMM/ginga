@@ -30,7 +30,7 @@ public:
 
   // Object:
   string getObjectTypeAsString () override;
-  void setProperty (const string &, const string &, Time) override;
+  void setProperty (const string &, const string &, Time, double = 0.0) override;
   void sendTick (Time, Time, Time) override;
 
   // Media;

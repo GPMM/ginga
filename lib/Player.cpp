@@ -368,9 +368,9 @@ Player::resetProperties (set<string> *props)
 
 void
 Player::schedulePropertyAnimation (const string &name, const string &from,
-                                   const string &to, Time dur)
+                                   const string &to, Time dur, double by)
 {
-  _animator->schedule (name, from, to, dur);
+  _animator->schedule (name, from, to, dur, by);
 }
 
 void

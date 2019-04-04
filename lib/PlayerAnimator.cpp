@@ -46,7 +46,7 @@ PlayerAnimator::clear ()
 
 void
 PlayerAnimator::schedule (const string &name, const string &from,
-                          const string &to, Time dur)
+                          const string &to, Time dur, double by)
 {
 
   TRACE ("%s from '%s' to '%s' in %" GINGA_TIME_FORMAT, name.c_str (),
@@ -111,7 +111,7 @@ PlayerAnimator::schedule (const string &name, const string &from,
     }
   else
     {
-      this->doSchedule (name, from, to, dur);
+      this->doSchedule (name, from, to, dur, by);
     }
 }
 
@@ -251,6 +251,28 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
     }
 
   _scheduled.remove_if (isDone);
+}
+
+void
+PlayerAnimator::update (Sphere *sphere)
+{
+  g_assert_nonnull (sphere);
+
+  for (AnimInfo *info : _scheduled)
+    {
+      string name;
+      g_assert_nonnull (info);
+      g_assert (!info->isDone ());
+
+      name = info->getName ();
+
+      if (name == "polar")
+        {
+        }
+      else if (name == "azimuthal")
+      {
+      }
+    }
 }
 
 void
@@ -420,7 +442,7 @@ PlayerAnimator::updateSchedule (AnimInfo *info, const string &name,
 
 void
 PlayerAnimator::doSchedule (const string &name, const string &from,
-                            const string &to, Time dur)
+                            const string &to, Time dur, double by)
 {
 
   AnimInfo *info;
@@ -461,7 +483,7 @@ PlayerAnimator::doSchedule (const string &name, const string &from,
       target = ginga::parse_percent (to, 100, 0, G_MAXINT);
     }
 
-  info = new AnimInfo (name, current, target, dur);
+  info = new AnimInfo (name, current, target, dur, by);
   if (from != "")
     info->init (current, *_time);
 
@@ -470,12 +492,13 @@ PlayerAnimator::doSchedule (const string &name, const string &from,
 
 // AnimInfo.
 
-AnimInfo::AnimInfo (const string &name, double from, double to, Time dur)
+AnimInfo::AnimInfo (const string &name, double from, double to, Time dur, double by)
 {
   _name = name;
   _current = from;
   _target = to;
   _duration = dur;
+  _by = by;
   _done = false;
   _init = false;
   _stateNode = 0;
@@ -519,6 +542,12 @@ Time
 AnimInfo::getDuration ()
 {
   return _duration;
+}
+
+double
+AnimInfo::getBy ()
+{
+  return _by;
 }
 
 bool

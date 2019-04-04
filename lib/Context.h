@@ -33,7 +33,7 @@ public:
   string getObjectTypeAsString () override;
   string toString () override;
   string getProperty (const string &) override;
-  void setProperty (const string &, const string &, Time dur = 0) override;
+  void setProperty (const string &, const string &, Time dur = 0, double by = 0.0) override;
   void sendKey (const string &, bool) override;
   void sendTick (Time, Time, Time) override;
   bool beforeTransition (Event *, Event::Transition) override;

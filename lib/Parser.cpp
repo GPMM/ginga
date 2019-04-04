@@ -160,6 +160,7 @@ typedef struct ParserConnRole
   string delay;                 ///< Role delay.
   string key;                   ///< Role key (if selection).
   string value;                 ///< Role value (if attribution).
+  string by;                    ///< Role by.
 } ParserConnRole;
 
 /**
@@ -2808,6 +2809,9 @@ borderColor='%s'}",
               act.delay = st->resolveParameter (role->delay, &bind->params,
                                                 params, &ghosts_map);
 
+              act.by = st->resolveParameter (role->by, &bind->params,
+                                                params, &ghosts_map);
+
               act.predicate = nullptr;
               if (role->predicate != nullptr)
                 {
@@ -3245,6 +3249,9 @@ ParserState::pushSimpleCondition (ParserState *st, ParserElt *elt)
 
   if (!role.condition)
     elt->getAttribute ("delay", &role.delay);
+
+  if (!role.condition)
+    elt->getAttribute ("by", &role.by);
 
   if (role.eventType == Event::SELECTION)
     elt->getAttribute ("key", &role.key);

@@ -301,6 +301,7 @@ Document::evalAction (Action init)
              act.event->getFullId ().c_str ());
 
       evt->setParameter ("duration", act.duration);
+      evt->setParameter ("by", act.by);
       if (evt->getType () == Event::ATTRIBUTION)
         evt->setParameter ("value", act.value);
 

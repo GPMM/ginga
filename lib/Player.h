@@ -126,7 +126,7 @@ public:
   void resetProperties ();
   void resetProperties (set<string> *);
   void schedulePropertyAnimation (const string &, const string &,
-                                  const string &, Time);
+                                  const string &, Time, double = 0.0);
   virtual void reload ();
   virtual void redraw (cairo_t *);
 

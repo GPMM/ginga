@@ -61,7 +61,7 @@ Media::toString ()
 }
 
 void
-Media::setProperty (const string &name, const string &value, Time dur)
+Media::setProperty (const string &name, const string &value, Time dur, double by)
 {
   string from = this->getProperty (name);
   Object::setProperty (name, value, dur);
@@ -69,11 +69,14 @@ Media::setProperty (const string &name, const string &value, Time dur)
   if (_player == nullptr)
     return;
 
+  cout << "BY " << by << endl;
+
   g_assert (GINGA_TIME_IS_VALID (dur));
   if (dur > 0)
-    _player->schedulePropertyAnimation (name, from, value, dur);
+    _player->schedulePropertyAnimation (name, from, value, dur, by);
   else
     _player->setProperty (name, value);
+
 }
 
 void
@@ -421,17 +424,24 @@ Media::afterTransition (Event *evt, Event::Transition transition)
               string name;
               string s;
               Time dur;
+              double by;
 
               name = evt->getId ();
               _doc->evalPropertyRef (value, &value);
 
               dur = 0;
+              by = 0.0;
               if (evt->getParameter ("duration", &s))
                 {
                   _doc->evalPropertyRef (s, &s);
                   dur = ginga::parse_time (s);
                 }
-              this->setProperty (name, value, dur);
+              if (evt->getParameter ("by", &s))
+                {
+                  _doc->evalPropertyRef (s, &s);
+                  by = xstrtod (s);
+                }
+              this->setProperty (name, value, dur, by);
               this->addDelayedAction (evt, Event::STOP, value, dur);
               TRACE ("start %s:='%s' (dur=%s) at %" GINGA_TIME_FORMAT,
                      evt->getFullId ().c_str (), value.c_str (),

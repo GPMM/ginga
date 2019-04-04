@@ -67,7 +67,7 @@ public:
   bool isSleeping ();
 
   virtual string getProperty (const string &);
-  virtual void setProperty (const string &, const string &, Time dur = 0);
+  virtual void setProperty (const string &, const string &, Time dur = 0, double by = 0.0);
 
   const list<pair<Action, Time> > *getDelayedActions ();
   void addDelayedAction (Event *, Event::Transition,

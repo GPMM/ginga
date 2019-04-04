@@ -28,13 +28,14 @@ GINGA_NAMESPACE_BEGIN
 class AnimInfo
 {
 public:
-  AnimInfo (const string &, double, double, Time);
+  AnimInfo (const string &, double, double, Time, double);
   ~AnimInfo ();
 
   string getName ();
   double getCurrent ();
   double getTarget ();
   Time getDuration ();
+  double getBy ();
   double getSpeed ();
   int getStateNode ();
   void setStateNode (int);
@@ -50,6 +51,7 @@ private:
   double _current;   // current value
   double _target;    // target value
   Time _duration;    // animation duration
+  double _by;         // animation by
   Time _last_update; // time of the last update
   double _speed;     // animation speed
   bool _done;        // true if animation is done
@@ -87,8 +89,9 @@ public:
   PlayerAnimator (Formatter *, Time *);
   ~PlayerAnimator ();
   void clear ();
-  void schedule (const string &, const string &, const string &, Time);
+  void schedule (const string &, const string &, const string &, Time, double = 0.0);
   void update (Rect *, Color *, guint8 *, list<int> *);
+  void update (Sphere *);
   void setTransitionProperties (const string &, const string &);
   void scheduleTransition (const string &, Rect *, Color *, guint8 *,
                            list<int> *);
@@ -100,7 +103,7 @@ private:
   TransitionInfo *_transOut;
   Time *_time;
 
-  void doSchedule (const string &, const string &, const string &, Time);
+  void doSchedule (const string &, const string &, const string &, Time, double = 0.0);
   void updateSchedule (AnimInfo *, const string &, const string &,
                        const string &, Time);
 };
