@@ -37,6 +37,12 @@ void
 PlayerSE::incTime(Time time)
 {
   Player::incTime(time);
+
+  if (_prop.positioning == SPHERE)
+    {
+      if (_animator->update (&_prop.sphere))
+        cout << "animator polar " << _prop.sphere.polar << " azimuthal " << _prop.sphere.azimuthal << endl;
+    }
 }
 
 void
@@ -45,7 +51,11 @@ PlayerSE::start ()
   if (!Player::getPrepared ())
     _client->connect ();
 
-  cout << "x " << _prop.axis.x << " y " << _prop.axis.y << " z " << _prop.axis.z << endl;
+  if (_prop.positioning == AXIS)
+    cout << "x " << _prop.axis.x << " y " << _prop.axis.y << " z " << _prop.axis.z << endl;
+  else if (_prop.positioning == SPHERE)
+    cout << "start polar " << _prop.sphere.polar << " azimuthal " << _prop.sphere.azimuthal << endl;
+
   _client->publish("teste", "start");
 
   Player::start ();

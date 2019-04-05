@@ -44,14 +44,15 @@ public:
   bool isInit ();
 
   void init (double current, Time time);
-  void update (Time time);
+  void update (Time time, bool &updated);
 
 private:
   string _name;      // property name
   double _current;   // current value
   double _target;    // target value
   Time _duration;    // animation duration
-  double _by;         // animation by
+  double _by;        // animation by
+  Time _step;         // time step
   Time _last_update; // time of the last update
   double _speed;     // animation speed
   bool _done;        // true if animation is done
@@ -90,8 +91,8 @@ public:
   ~PlayerAnimator ();
   void clear ();
   void schedule (const string &, const string &, const string &, Time, double = 0.0);
-  void update (Rect *, Color *, guint8 *, list<int> *);
-  void update (Sphere *);
+  bool update (Rect *, Color *, guint8 *, list<int> *);
+  bool update (Sphere *);
   void setTransitionProperties (const string &, const string &);
   void scheduleTransition (const string &, Rect *, Color *, guint8 *,
                            list<int> *);

@@ -121,17 +121,17 @@ isDone (AnimInfo *info)
   return info->isDone ();
 }
 
-void
+bool
 PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
                         list<int> *cropPolygon)
 {
 
-#define UPDATE(info, Type, var, rnd, min, max)                             \
+#define UPDATE(info, Type, var, rnd, min, max, updated)                    \
   G_STMT_START                                                             \
   {                                                                        \
     if (!(info)->isInit ())                                                \
       (info)->init (var, *_time);                                          \
-    (info)->update (*_time);                                               \
+    (info)->update (*_time, updated);                                      \
     var = (Type) CLAMP (rnd ((info)->getCurrent ()), min, max);            \
   }                                                                        \
   G_STMT_END
@@ -140,37 +140,45 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
   g_assert_nonnull (bgColor);
   g_assert_nonnull (alpha);
 
+  bool updated = false;
+
   for (AnimInfo *info : _scheduled)
     {
       string name;
 
       g_assert_nonnull (info);
+      name = info->getName ();
+
+      if (name == "polar" || name == "azimuthal")
+        {
+          continue; // do nothing
+        }
+
       g_assert (!info->isDone ());
 
-      name = info->getName ();
       if (name == "top")
         {
-          UPDATE (info, int, rect->y, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, rect->y, lround, G_MININT, G_MAXINT, updated);
         }
       else if (name == "left")
         {
-          UPDATE (info, int, rect->x, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, rect->x, lround, G_MININT, G_MAXINT, updated);
         }
       else if (name == "width")
         {
-          UPDATE (info, int, rect->width, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, rect->width, lround, G_MININT, G_MAXINT, updated);
         }
       else if (name == "height")
         {
-          UPDATE (info, int, rect->height, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, rect->height, lround, G_MININT, G_MAXINT, updated);
         }
       else if (name == "barwipe:topToBottom")
         {
           list<int>::iterator it = cropPolygon->begin ();
           advance (it, 1);
-          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT, updated);
           advance (it, 2);
-          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT, updated);
 
           if (info->isDone ())
             cropPolygon->clear ();
@@ -178,9 +186,9 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
       else if (name == "barwipe:leftToRight")
         {
           list<int>::iterator it = cropPolygon->begin ();
-          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT, updated);
           advance (it, 6);
-          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT, updated);
 
           if (info->isDone ())
             cropPolygon->clear ();
@@ -193,7 +201,7 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
           else
             advance (it, 2);
 
-          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT, updated);
 
           if ((info->getStateNode () == 0)
               && (*it >= (rect->x + rect->width)))
@@ -213,7 +221,7 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
           if (info->getStateNode () == 0)
             advance (it, 1);
 
-          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT);
+          UPDATE (info, int, *it, lround, G_MININT, G_MAXINT, updated);
 
           if ((info->getStateNode () == 0)
               && (*it >= (rect->y + rect->height)))
@@ -229,19 +237,19 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
         }
       else if (name == "background:r")
         {
-          UPDATE (info, double, bgColor->red, round, 0., 1.);
+          UPDATE (info, double, bgColor->red, round, 0., 1., updated);
         }
       else if (name == "background:g")
         {
-          UPDATE (info, double, bgColor->green, round, 0., 1.);
+          UPDATE (info, double, bgColor->green, round, 0., 1., updated);
         }
       else if (name == "background:b")
         {
-          UPDATE (info, double, bgColor->blue, round, 0., 1.);
+          UPDATE (info, double, bgColor->blue, round, 0., 1., updated);
         }
       else if (name == "transparency")
         {
-          UPDATE (info, guint8, *alpha, lround, 0, 255);
+          UPDATE (info, guint8, *alpha, lround, 0, 255, updated);
         }
       else
         {
@@ -251,12 +259,16 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
     }
 
   _scheduled.remove_if (isDone);
+
+  return updated;
 }
 
-void
+bool
 PlayerAnimator::update (Sphere *sphere)
 {
   g_assert_nonnull (sphere);
+
+  bool updated = false;
 
   for (AnimInfo *info : _scheduled)
     {
@@ -267,12 +279,12 @@ PlayerAnimator::update (Sphere *sphere)
       name = info->getName ();
 
       if (name == "polar")
-        {
-        }
+        UPDATE (info, double, sphere->polar, round, 0., 180., updated);
       else if (name == "azimuthal")
-      {
-      }
+        UPDATE (info, double, sphere->azimuthal, round, 0., 360., updated);
     }
+
+  return updated;
 }
 
 void
@@ -503,6 +515,7 @@ AnimInfo::AnimInfo (const string &name, double from, double to, Time dur, double
   _init = false;
   _stateNode = 0;
   _speed = 1.0;
+  _step = 0;
 }
 
 void
@@ -583,12 +596,18 @@ AnimInfo::init (double current, Time time)
     _speed = fabs (_target - current) / (double) _duration;
   else
     _speed = 0;
+  if (_by)
+    {
+      double diff;
+      diff = (_current < _target) ? _target - _current : _current - _target;
+      _step = _duration / (int) (diff / _by);
+    }
   _init = true;
   _last_update = time;
 }
 
 void
-AnimInfo::update (Time time)
+AnimInfo::update (Time time, bool &updated)
 {
   Time _current_time = time; // micro to mili
   int dir;
@@ -597,9 +616,13 @@ AnimInfo::update (Time time)
   // g_assert (!_done);
 
   dir = (_current < _target) ? 1 : -1;
-  _current += dir * _speed * (double) (_current_time - _last_update);
 
-  _last_update = _current_time;
+  if (!_step || _step <= (_current_time - _last_update))
+    {
+      _current += dir * _speed * (double) (_current_time - _last_update);
+      _last_update = _current_time;
+      updated = true;
+    }
 
   if (_duration == 0 || (dir > 0 && _current >= _target)
       || (dir < 0 && _current <= _target))

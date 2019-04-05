@@ -69,8 +69,6 @@ Media::setProperty (const string &name, const string &value, Time dur, double by
   if (_player == nullptr)
     return;
 
-  cout << "BY " << by << endl;
-
   g_assert (GINGA_TIME_IS_VALID (dur));
   if (dur > 0)
     _player->schedulePropertyAnimation (name, from, value, dur, by);
