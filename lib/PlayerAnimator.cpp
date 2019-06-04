@@ -77,6 +77,17 @@ PlayerAnimator::schedule (const string &name, const string &from,
       this->doSchedule ("left", *pre++, *pos++, dur);
       this->doSchedule ("top", *pre++, *pos++, dur);
     }
+  else if (name == "location-sensory-effect")
+    {
+      if (from != "")
+        list_pre = ginga::parse_list (from, ',', 2, 2);
+      list_pos = ginga::parse_list (to, ',', 2, 2);
+      auto pre = list_pre.begin ();
+      auto pos = list_pos.begin ();
+
+      this->doSchedule ("polar", *pre++, *pos++, dur, by);
+      this->doSchedule ("azimuthal", *pre++, *pos++, dur, by);
+    }
   else if (name == "size")
     {
       if (from != "")
@@ -266,6 +277,17 @@ PlayerAnimator::update (Rect *rect, Color *bgColor, guint8 *alpha,
 bool
 PlayerAnimator::update (Sphere *sphere)
 {
+#define UPDATE_SPHERE(info, Type, var, updated) \
+  G_STMT_START                                  \
+  {                                             \
+    if (!(info)->isInit ())                     \
+      (info)->init (var, *_time);               \
+    (info)->update (*_time, updated);           \
+    var = (info)->getCurrent ();                \
+  }                                             \
+  G_STMT_END
+
+
   g_assert_nonnull (sphere);
 
   bool updated = false;
@@ -279,9 +301,9 @@ PlayerAnimator::update (Sphere *sphere)
       name = info->getName ();
 
       if (name == "polar")
-        UPDATE (info, double, sphere->polar, round, 0., 180., updated);
+        UPDATE_SPHERE (info, double, sphere->polar, updated);
       else if (name == "azimuthal")
-        UPDATE (info, double, sphere->azimuthal, round, 0., 360., updated);
+        UPDATE_SPHERE (info, double, sphere->azimuthal, updated);
     }
 
   return updated;
@@ -488,6 +510,12 @@ PlayerAnimator::doSchedule (const string &name, const string &from,
         current = ginga::parse_percent (from, 255, 0, 255);
       target = ginga::parse_percent (to, 255, 0, 255);
     }
+  else if (name == "polar" || name == "azimuthal")
+    {
+      if (from != "")
+        current = ginga::parse_degrees (from);
+      target = ginga::parse_degrees (to);
+    }
   else
     {
       if (from != "")
@@ -600,7 +628,7 @@ AnimInfo::init (double current, Time time)
     {
       double diff;
       diff = (_current < _target) ? _target - _current : _current - _target;
-      _step = _duration / (int) (diff / _by);
+      _step = _duration / ((int) (diff / _by) + 1);
     }
   _init = true;
   _last_update = time;
@@ -617,9 +645,15 @@ AnimInfo::update (Time time, bool &updated)
 
   dir = (_current < _target) ? 1 : -1;
 
-  if (!_step || _step <= (_current_time - _last_update))
+  if (!_step)
     {
       _current += dir * _speed * (double) (_current_time - _last_update);
+      _last_update = _current_time;
+      updated = true;
+    }
+  else if (_step <= (_current_time - _last_update))
+    {
+      _current += _by;
       _last_update = _current_time;
       updated = true;
     }

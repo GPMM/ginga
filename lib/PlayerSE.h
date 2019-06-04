@@ -38,13 +38,15 @@ public:
   void pause () override;
   void resume () override;
   void reload () override;
-  void startPreparation ();
+  void startPreparation () override;
 
 protected:
   bool doSetProperty (Property, const string &, const string &) override;
 
 private:
   unique_ptr<Protocol> _client;
+
+  string getSEDL (string, bool);
 };
 
 GINGA_NAMESPACE_END

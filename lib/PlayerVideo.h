@@ -32,7 +32,7 @@ public:
   void pause () override;
   void resume () override;
   void redraw (cairo_t *) override;
-  void startPreparation ();
+  void startPreparation () override;
 
 protected:
   bool doSetProperty (Property, const string &, const string &) override;

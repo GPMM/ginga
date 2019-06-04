@@ -2900,7 +2900,7 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
     {
       if (elt->getAttribute ("polar", &str))
         {
-          sphere.polar = parse_degrees (str, 0.0, 180.0);
+          sphere.polar = parse_degrees (str);
         }
       else
         {
@@ -2908,7 +2908,7 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
         }
       if (elt->getAttribute ("azimuthal", &str))
         {
-          sphere.azimuthal = parse_degrees (str, 0.0, 360.0);
+          sphere.azimuthal = parse_degrees (str);
         }
       else
         {
@@ -2916,7 +2916,7 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
         }
       if (elt->getAttribute ("width", &str))
         {
-          sphere.width = ginga::parse_degrees (str, 0.0, 360.0);
+          sphere.width = ginga::parse_degrees (str);
           elt->unsetAttribute("width");
         }
       else
@@ -2925,7 +2925,7 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
         }
       if (elt->getAttribute ("height", &str))
         {
-          sphere.height = ginga::parse_degrees (str, 0.0, 360.0);
+          sphere.height = ginga::parse_degrees (str);
           elt->unsetAttribute("height");
         }
       else
@@ -2934,6 +2934,10 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
         }
 
       elt->setAttribute ("positioning", "sphere");
+      if (sphere.width == 0.0 && sphere.height == 0.0)
+        elt->setAttribute ("location", xstrbuild ("%g,%g,0,0", sphere.polar, sphere.azimuthal));
+      else
+        elt->setAttribute ("location", xstrbuild ("%g,%g,%g,%g", sphere.polar, sphere.azimuthal, sphere.width, sphere.height));
       elt->setAttribute ("polar", xstrbuild ("%.2lf", sphere.polar));
       elt->setAttribute ("azimuthal", xstrbuild ("%.2lf", sphere.azimuthal));
       elt->setAttribute ("widthDegrees", xstrbuild ("%.2lf", sphere.width));
@@ -2969,6 +2973,7 @@ ParserState::pushRegion (ParserState *st, ParserElt *elt)
         }
 
       elt->setAttribute ("positioning", "axis");
+      elt->setAttribute ("location", xstrbuild ("%s:%s:%s", axis.x.c_str (), axis.y.c_str (), axis.z.c_str ()));
       elt->setAttribute ("xAxis", xstrbuild ("%s", axis.x.c_str ()));
       elt->setAttribute ("yAxis", xstrbuild ("%s", axis.y.c_str ()));
       elt->setAttribute ("zAxis", xstrbuild ("%s", axis.z.c_str ()));

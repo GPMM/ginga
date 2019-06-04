@@ -306,7 +306,7 @@ parse_pixel (const string &s)
  * @return The resulting double.
  */
 double
-parse_degrees (const string &s, double min, double max)
+parse_degrees (const string &s)
 {
   double result;
   size_t pos;
@@ -322,7 +322,7 @@ parse_degrees (const string &s, double min, double max)
 
   result = xstrtod (value);
 
-  return (double) CLAMP (result, min, max);
+  return result;
 }
 
 /**

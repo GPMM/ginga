@@ -370,7 +370,10 @@ void
 Player::schedulePropertyAnimation (const string &name, const string &from,
                                    const string &to, Time dur, double by)
 {
-  _animator->schedule (name, from, to, dur, by);
+  if (name == "location" && _prop.positioning == SPHERE)
+    _animator->schedule ("location-sensory-effect", from, to, dur, by);
+  else
+    _animator->schedule (name, from, to, dur, by);
 }
 
 void
@@ -600,9 +603,12 @@ Player::createPlayer (Formatter *formatter, Media *media, const string &uri,
     {
       player = new PlayerText (formatter, media);
     }
-  else if (xstrhasprefix (mime, "application/x-sensoryEffect"))
+  else if (xstrhasprefix (mime, "application/x-sensory-effect"))
     {
       player = new PlayerSE (formatter, media);
+      size_t pos = strlen("application/x-sensory-effect-");
+      if (mime.length() > pos)
+          mime = mime.substr(pos);
     }
 #if defined WITH_CEF && WITH_CEF
   else if (xstrhasprefix (mime, "text/html"))
@@ -673,12 +679,41 @@ Player::doSetProperty (Property code, unused (const string &name),
     case PROP_LOCATION:
       {
         list<string> lst;
-        if (unlikely (!ginga::try_parse_list (value, ',', 2, 2, &lst)))
+        if (ginga::try_parse_list (value, ',', 2, 2, &lst))
+        {
+          auto it = lst.begin ();
+          _media->setProperty ("left", *it++);
+          _media->setProperty ("top", *it++);
+          g_assert (it == lst.end ());
+        }
+        else if (ginga::try_parse_list (value, ',', 4, 4, &lst))
+        {
+          auto it = lst.begin ();
+          string polar = *it++;
+          string azimuthal = *it++;
+          string width = *it++;
+          string height = *it++;
+          g_assert (it == lst.end ());
+          string location = polar + "," + azimuthal;
+
+          _media->setProperty ("polar", polar);
+          _media->setProperty ("azimuthal", azimuthal);
+
+          if (width != "0")
+          {
+            location += "," + width;
+            _media->setProperty ("width", width);
+          }
+
+          if (height != "0") {
+            location += "," + height;
+            _media->setProperty ("height", height);
+          }
+
+          _prop.location = location;
+        }
+        else
           return false;
-        auto it = lst.begin ();
-        _media->setProperty ("left", *it++);
-        _media->setProperty ("top", *it++);
-        g_assert (it == lst.end ());
         break;
       }
     case PROP_SIZE:

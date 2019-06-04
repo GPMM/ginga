@@ -163,6 +163,7 @@ protected:
   map<string, string> _properties; // property table
   struct
   {
+    string location;         // location
     Color bgColor;           // background color
     Positioning positioning; // screen, sphere or axis 
     Rect rect;               // x, y, w, h in pixels

@@ -174,7 +174,7 @@ Time parse_time (const string &);
 
 int parse_percent (const string &, int, int, int);
 guint8 parse_pixel (const string &);
-double parse_degrees (const string &, double, double);
+double parse_degrees (const string &);
 string parse_axis (const char, const string &);
 
 // String functions.

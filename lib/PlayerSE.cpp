@@ -15,6 +15,15 @@ License for more details.
 You should have received a copy of the GNU General Public License
 along with Ginga.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/uri.h>
+
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+
 #include "MQTT.h"
 #include "PlayerSE.h"
 
@@ -26,7 +35,6 @@ PlayerSE::PlayerSE (Formatter *formatter, Media *media)
     : Player (formatter, media)
 {
   _client = make_unique<MQTT> ("127.0.0.1");
-  cout << "criou o player" << endl;
 }
 
 PlayerSE::~PlayerSE ()
@@ -40,8 +48,24 @@ PlayerSE::incTime(Time time)
 
   if (_prop.positioning == SPHERE)
     {
+      string previousLocation = _prop.location;
+
       if (_animator->update (&_prop.sphere))
-        cout << "animator polar " << _prop.sphere.polar << " azimuthal " << _prop.sphere.azimuthal << endl;
+        {
+          string sedl = getSEDL(previousLocation, false);
+          _client->publish(previousLocation, sedl);
+
+          if (_prop.sphere.width == 0.0 && _prop.sphere.height == 0.0)
+            _prop.location =  xstrbuild ("%g,%g", _prop.sphere.polar,
+                _prop.sphere.azimuthal);
+          else
+            _prop.location =  xstrbuild ("%g,%g,%g,%g",
+                _prop.sphere.polar, _prop.sphere.azimuthal,
+                _prop.sphere.width, _prop.sphere.height);
+
+          sedl = getSEDL(_prop.location, true);
+          _client->publish(_prop.location, sedl);
+        }
     }
 }
 
@@ -51,12 +75,9 @@ PlayerSE::start ()
   if (!Player::getPrepared ())
     _client->connect ();
 
-  if (_prop.positioning == AXIS)
-    cout << "x " << _prop.axis.x << " y " << _prop.axis.y << " z " << _prop.axis.z << endl;
-  else if (_prop.positioning == SPHERE)
-    cout << "start polar " << _prop.sphere.polar << " azimuthal " << _prop.sphere.azimuthal << endl;
+  string sedl = getSEDL(_prop.location, true);
 
-  _client->publish("teste", "start");
+  _client->publish(_prop.location, sedl);
 
   Player::start ();
 }
@@ -64,7 +85,9 @@ PlayerSE::start ()
 void
 PlayerSE::stop ()
 {
-  _client->publish("teste", "stop");
+  string sedl = getSEDL(_prop.location, false);
+
+  _client->publish(_prop.location, sedl);
   _client->disconnect ();
 
   Player::stop ();
@@ -85,7 +108,6 @@ PlayerSE::resume ()
 void
 PlayerSE::reload ()
 {
-  cout << "reload" << endl;
   Player::reload ();
 }
 
@@ -95,7 +117,7 @@ PlayerSE::startPreparation ()
   g_assert (_state != PREPARING);
   TRACE ("preparing %s", _id.c_str ());
 
-  _client->connect ([this] () { cout << "conectou" << endl; Player::setPrepared(true); });
+  _client->connect ([this] () { Player::setPrepared(true); });
 
   Player::startPreparation ();
 }
@@ -114,5 +136,40 @@ PlayerSE::doSetProperty (Property code, unused (const string &name),
 
   return true;
 }
+
+string
+PlayerSE::getSEDL (string location, bool activate)
+{
+  int len;
+  xmlDocPtr doc;
+  xmlChar *buffer;
+  xmlNodePtr effectNode;
+
+  doc = xmlNewDoc(BAD_CAST "1.0");
+
+  g_assert (doc);
+
+  effectNode = xmlNewNode(NULL, BAD_CAST "Effect");
+
+  g_assert (effectNode);
+
+  xmlDocSetRootElement(doc, effectNode);
+  
+  xmlNewProp(effectNode, BAD_CAST "type", BAD_CAST _prop.type.c_str());
+  xmlNewProp(effectNode, BAD_CAST "location", BAD_CAST location.c_str());
+
+  if (_prop.duration != GINGA_TIME_NONE)
+    xmlNewProp(effectNode, BAD_CAST "duration", BAD_CAST getProperty("explicitDur").c_str());
+
+  xmlNewProp(effectNode, BAD_CAST "activate", activate ? BAD_CAST "true" : BAD_CAST "false");
+
+  xmlDocDumpMemory (doc, &buffer, &len);
+
+  string sedl ((char *) buffer);
+  xmlFree(buffer);
+  xmlFreeDoc(doc);
+
+  return sedl;
+} 
 
 GINGA_NAMESPACE_END

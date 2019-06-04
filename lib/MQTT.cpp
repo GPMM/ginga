@@ -35,6 +35,8 @@ void MQTT::setOption(MQTTOption opt, int value)
       if (value >= 0 && value <= 3)
         _qos = value;
       break;
+    default:
+      break;
   }
 }
 
@@ -44,6 +46,8 @@ void MQTT::setOption(MQTTOption opt, bool value)
   {
     case CLEAN_SESSION:
       _connOpts.set_clean_session(value);
+      break;
+    default:
       break;
   }
 }
@@ -145,8 +149,12 @@ void MQTT::stateTransition(MQTTState state)
           _state = state;
           this->triggerQueuedActions();
           break;
+        default:
+          break;
       }
 
+      break;
+    default:
       break;
   }
 }

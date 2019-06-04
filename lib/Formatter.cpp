@@ -292,7 +292,7 @@ Formatter::redraw (cairo_t *cr)
       string info;
       cairo_surface_t *debug;
       Rect ink;
-      info = xstrbuild ("%s: #%lu %" GINGA_TIME_FORMAT " %.1ffps",
+      info = xstrbuild ("%s: #%llu %" GINGA_TIME_FORMAT " %.1ffps",
                         _docPath.c_str (), _lastTickFrameNo,
                         GINGA_TIME_ARGS (_lastTickTotal),
                         1 * GINGA_SECOND / (double) _lastTickDiff);
